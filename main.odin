@@ -41,6 +41,7 @@ entry_point :: proc(data: rawptr)
     free_all(allocator)
   }
 
+  os.close(results)
   vmem.arena_destroy(&thread_arena)
 }
 
@@ -72,6 +73,30 @@ split_lines_roughly :: proc(data: []byte) -> (start: int, end: int)
   return
 }
 
+/*
+
+Deal with uneven tasks using an atomic counter:
+
+Task *tasks = ...;
+S64 tasks_count = ...;
+
+// set up the counter
+static S64 task_take_counter = 0;
+task_take_counter = 0;
+BarrierSync(barrier);
+
+// loop on all threads - take tasks as long as we can
+for(;;)
+{
+  S64 task_idx = AtomicIncEval64(&task_take_counter) - 1;
+  if(task_idx >= tasks_count)
+  {
+    break;
+  }
+  // do task
+}
+*/
 solutions := [?] proc() -> string {
-  solve_day_01,
+    example_ST,
+    example_MT,
 }

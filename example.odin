@@ -1,5 +1,6 @@
 package aoc
 
+import "core:fmt"
 import "core:os"
 import "core:strings"
 import "core:sync"
@@ -9,7 +10,7 @@ key :: struct {
     b: byte,
 }
 
-example_ST :: proc() -> string
+example_ST :: proc() -> Results
 {
     // Reading input is done by a single thread, so we wrap this in an "if idx == 0" block and sync with a barrier
     LR, LR_map, starting_points := parse_input()
@@ -39,7 +40,7 @@ global_starting_points: []string
 global_results: [2]int
 partial_results: []int
 
-example_MT :: proc() -> string
+example_MT :: proc() -> Results
 {
     this_idx := context.user_index
     if this_idx == 0
@@ -76,18 +77,13 @@ example_MT :: proc() -> string
         global_results[1] = acc
     }
 
-    return this_idx == 0 ? make_results(global_results) : ""
+    if this_idx == 0 do return make_results(global_results)
+    else do return Results{}
 }
 
-make_results :: proc(results: [2]int) -> string
+make_results :: proc(results: [2]int) -> Results
 {
-    sb := strings.builder_make()
-    strings.write_string(&sb, "Part 1: ")
-    strings.write_int(&sb, results[0])
-    strings.write_string(&sb, "\nPart 2: ")
-    strings.write_int(&sb, results[1])
-    strings.write_rune(&sb, '\n')
-    return strings.to_string(sb)
+    return Results {p1=fmt.aprint(results[0]), p2=fmt.aprint(results[1])}
 }
 
 parse_input :: proc() -> (string, map[key]string, []string)

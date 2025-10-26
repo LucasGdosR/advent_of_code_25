@@ -1,5 +1,6 @@
 package aoc
 
+import "core:fmt"
 import "core:math"
 import "core:os"
 import "core:sync"
@@ -8,6 +9,10 @@ import vmem "core:mem/virtual"
 
 NUMBER_OF_CORES := os.processor_core_count()
 BARRIER: sync.Barrier
+
+Results :: struct {
+  p1, p2: string
+}
 
 main :: proc()
 {
@@ -35,9 +40,11 @@ entry_point :: proc(data: rawptr)
   allocator := vmem.arena_allocator(&thread_arena)
   context.allocator = allocator
 
-  for solve_day in solutions {
-    result := solve_day()
-    if i == 0 do os.write_string(results, result)
+  for solve_day, day in solutions {
+    day_results := solve_day()
+    if i == 0 do os.write_string(results, fmt.aprintfln(
+      "Day %v:\nPart 1: %v\nPart 2: %v\n\n",
+      day+1, day_results.p1, day_results.p2))
     free_all(allocator)
   }
 
@@ -96,7 +103,7 @@ for(;;)
   // do task
 }
 */
-solutions := [?] proc() -> string {
-    example_ST,
-    example_MT,
+solutions := [?] proc() -> Results {
+  example_ST,
+  example_MT,
 }

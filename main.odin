@@ -48,7 +48,7 @@ entry_point :: proc(data: rawptr)
     free_all(allocator)
   }
 
-  os.close(results)
+  if i == 0 do os.close(results)
   vmem.arena_destroy(&thread_arena)
 }
 
@@ -80,6 +80,13 @@ split_lines_roughly :: proc(data: []byte) -> (start: int, end: int)
   return
 }
 
+make_results_int :: proc(results: [2]int) -> Results
+{
+    return Results {p1=fmt.aprint(results[0]), p2=fmt.aprint(results[1])}
+}
+
+make_results :: proc{make_results_int}
+
 /*
 
 Deal with uneven tasks using an atomic counter:
@@ -104,6 +111,5 @@ for(;;)
 }
 */
 solutions := [?] proc() -> Results {
-  example_ST,
-  example_MT,
+  solve_day_01,
 }

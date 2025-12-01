@@ -81,11 +81,6 @@ example_MT :: proc() -> Results
     else do return Results{}
 }
 
-make_results :: proc(results: [2]int) -> Results
-{
-    return Results {p1=fmt.aprint(results[0]), p2=fmt.aprint(results[1])}
-}
-
 parse_input :: proc() -> (string, map[key]string, []string)
 {
     file, _ := os.read_entire_file("input8")

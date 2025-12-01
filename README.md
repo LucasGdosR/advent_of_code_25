@@ -8,3 +8,7 @@ For this year's AoC, my challenge is making a single program that solves the ent
 - No memory leaks allowed.
 
 I was inspired by this [article](https://www.rfleury.com/p/multi-core-by-default) to make this multi-threaded in a simple way.
+
+## Commentary by Day
+
+01: This problem is serial, so every line must be processed sequentially. Adapting it to single threaded execution was trivial.

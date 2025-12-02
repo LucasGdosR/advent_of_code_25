@@ -20,7 +20,7 @@ solve_day_01 :: proc() -> Results
             rot := strconv.atoi(line[1:])
             next := curr + sign * rot
             results[1] += abs(next) / 100 + int(next == 0 || (next < 0 && curr > 0))
-            curr = ((next % 100) + 100) % 100
+            curr = next %% 100
             results[0] += int(curr == 0)
         }
         return make_results(results)

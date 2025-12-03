@@ -87,29 +87,7 @@ make_results_int :: proc(results: [2]int) -> Results
 
 make_results :: proc{make_results_int}
 
-/*
-
-Deal with uneven tasks using an atomic counter:
-
-Task *tasks = ...;
-S64 tasks_count = ...;
-
-// set up the counter
-static S64 task_take_counter = 0;
-task_take_counter = 0;
-BarrierSync(barrier);
-
-// loop on all threads - take tasks as long as we can
-for(;;)
-{
-  S64 task_idx = AtomicIncEval64(&task_take_counter) - 1;
-  if(task_idx >= tasks_count)
-  {
-    break;
-  }
-  // do task
-}
-*/
 solutions := [?] proc() -> Results {
   solve_day_01,
+  solve_day_02,
 }

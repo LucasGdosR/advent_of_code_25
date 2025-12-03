@@ -34,50 +34,50 @@ example_ST :: proc() -> Results
     return make_results(results)
 }
 
-global_LR: string
-global_LR_map: map[key]string
-global_starting_points: []string
-global_results: [2]int
-partial_results: []int
+EXAMPLE_LR: string
+EXAMPLE_LR_map: map[key]string
+EXAMPLE_starting_points: []string
+EXAMPLE_results: [2]int
+EXAMPLE_partial_results: []int
 
 example_MT :: proc() -> Results
 {
     this_idx := context.user_index
     if this_idx == 0
     {
-        global_LR, global_LR_map, global_starting_points = parse_input()
-        partial_results = make([]int, len(global_starting_points))
+        EXAMPLE_LR, EXAMPLE_LR_map, EXAMPLE_starting_points = parse_input()
+        EXAMPLE_partial_results = make([]int, len(EXAMPLE_starting_points))
     }
     sync.barrier_wait(&BARRIER)
 
     // This would need to be reworked if we had more points or fewer cores
     // It would become a for loop using split_count_evenly or something like that
-    points := len(global_starting_points)
+    points := len(EXAMPLE_starting_points)
     if this_idx < points
     {
-        l := len(global_LR)
+        l := len(EXAMPLE_LR)
         count := 0
-        start := global_starting_points[this_idx]
+        start := EXAMPLE_starting_points[this_idx]
         curr := start
         for curr[2] != 'Z' {
-            curr = global_LR_map[key{str=curr, b=global_LR[count % l]}]
+            curr = EXAMPLE_LR_map[key{str=curr, b=EXAMPLE_LR[count % l]}]
             count += 1
         }
         // This "if" only gets executed by a single thread, so it doesn't need to be atomic.
-        if start == "AAA" do global_results[0] = count
-        partial_results[this_idx] = count / l
+        if start == "AAA" do EXAMPLE_results[0] = count
+        EXAMPLE_partial_results[this_idx] = count / l
     }
     sync.barrier_wait(&BARRIER)
 
     // Since there's no atomic multiply, I stored partial results and multiplied them in a single thread.
     if this_idx == 0
     {
-        acc := len(global_LR)
-        for p in partial_results do acc *= p
-        global_results[1] = acc
+        acc := len(EXAMPLE_LR)
+        for p in EXAMPLE_partial_results do acc *= p
+        EXAMPLE_results[1] = acc
     }
 
-    if this_idx == 0 do return make_results(global_results)
+    if this_idx == 0 do return make_results(EXAMPLE_results)
     else do return Results{}
 }
 

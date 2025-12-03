@@ -90,4 +90,5 @@ make_results :: proc{make_results_int}
 solutions := [?] proc() -> Results {
   solve_day_01,
   solve_day_02,
+  solve_day_03,
 }

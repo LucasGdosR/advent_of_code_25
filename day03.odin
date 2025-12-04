@@ -1,21 +1,23 @@
+#+private file
 package aoc
 
 import "core:os"
 import "core:strings"
 import "core:sync"
 
-DAY03_input: []byte
-DAY03_results: [2]int
-DAY03_LINE_WIDTH :: 100 + 1 // '\n'
-DAY03_LINE_COUNT :: 200
+global_input: []byte
+global_results: [2]int
+LINE_WIDTH :: 100 + 1 // '\n'
+LINE_COUNT :: 200
 
+@private
 solve_day_03 :: proc() -> Results
 {
     this_idx := context.user_index
     if context.user_index == 0
     {
         ok: bool
-        DAY03_input, ok = os.read_entire_file("input/03")
+        global_input, ok = os.read_entire_file("input/03")
         if !ok do os.exit(1)
     }
 
@@ -24,9 +26,9 @@ solve_day_03 :: proc() -> Results
 
     sync.barrier_wait(&BARRIER)
 
-    start_row, end_row := split_count_evenly(DAY03_LINE_COUNT)
-    start_i, end_i := start_row * DAY03_LINE_WIDTH, end_row * DAY03_LINE_WIDTH - int(this_idx == NUMBER_OF_CORES - 1)
-    it := string(DAY03_input[start_i:end_i])
+    start_row, end_row := split_count_evenly(LINE_COUNT)
+    start_i, end_i := start_row * LINE_WIDTH, end_row * LINE_WIDTH - int(this_idx == NUMBER_OF_CORES - 1)
+    it := string(global_input[start_i:end_i])
 
     for bank in strings.split_lines_iterator(&it)
     {
@@ -71,10 +73,10 @@ solve_day_03 :: proc() -> Results
         }
         clear(&stack)
     }
-    sync.atomic_add_explicit(&DAY03_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
-    sync.atomic_add_explicit(&DAY03_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
+    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
+    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
 
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(DAY03_results) : Results{}
+    return this_idx == 0 ? make_results(global_results) : Results{}
 }

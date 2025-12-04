@@ -1,3 +1,4 @@
+#+private file
 package aoc
 
 import "core:os"
@@ -7,10 +8,11 @@ import "core:sync"
 
 INTERVALS :: 38
 
-DAY02_intervals: [][2]string
-DAY02_results: [2]int
-DAY02_task_counter: int
+global_intervals: [][2]string
+global_results: [2]int
+global_task_counter: int
 
+@private
 solve_day_02 :: proc() -> Results
 {
     this_idx := context.user_index
@@ -22,14 +24,14 @@ solve_day_02 :: proc() -> Results
 
     sync.barrier_wait(&BARRIER)
 
-    interval_count := len(DAY02_intervals)
+    interval_count := len(global_intervals)
 
     for//ever
     {
-        interval_idx := sync.atomic_add_explicit(&DAY02_task_counter, 1, sync.Atomic_Memory_Order.Relaxed)
+        interval_idx := sync.atomic_add_explicit(&global_task_counter, 1, sync.Atomic_Memory_Order.Relaxed)
         if interval_idx >= interval_count do break
 
-        interval := DAY02_intervals[interval_idx]
+        interval := global_intervals[interval_idx]
         start, end := interval[0], interval[1]
 
         length := len(start)
@@ -101,13 +103,14 @@ solve_day_02 :: proc() -> Results
             }
         }
     }
-    sync.atomic_add_explicit(&DAY02_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
-    sync.atomic_add_explicit(&DAY02_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
+    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
+    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
 
     sync.barrier_wait(&BARRIER)
-    return this_idx == 0 ? make_results(DAY02_results) : Results{}
+    return this_idx == 0 ? make_results(global_results) : Results{}
 }
 
+@private // This helper function might be useful somewhere else
 next_power_of_10 :: proc(n: int) -> int
 {
     if n == 0 do return 1
@@ -132,5 +135,5 @@ make_intervals :: proc()
         append(&dyn_arr, [2]string{start, end})
     }
 
-    DAY02_intervals = dyn_arr[:]
+    global_intervals = dyn_arr[:]
 }

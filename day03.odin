@@ -7,7 +7,8 @@ import "core:sync"
 
 global_input: []byte
 global_results: [2]int
-LINE_WIDTH :: 100 + 1 // '\n'
+BANK_LEN :: 100
+LINE_WIDTH :: BANK_LEN + 1 // '\n'
 LINE_COUNT :: 200
 
 @private
@@ -32,37 +33,25 @@ solve_day_03 :: proc() -> Results
 
     for bank in strings.split_lines_iterator(&it)
     {
-        max_c := '1'
-        max_i := 0
+        assert(len(bank) == BANK_LEN, "Unexpected input dimensions. Line size is hard coded.")
+        first_digit: rune
+        first_digit_idx := 0
         for c, i in bank
         {
             // Part 1
-            if c > max_c
-            {
-                max_c = c
-                max_i = i
-            }
+            if i < BANK_LEN - 1 && c > first_digit do first_digit, first_digit_idx = c, i
 
             // Part 2:
             // Keep the highest number at the bottom of the stack
             // as long as there are enough elements left to fill it to 12.
-            for len(stack) > 0 && c > stack[len(stack) - 1] && len(bank) - i - 1 >= 12 - len(stack) do pop(&stack)
+            for len(stack) > 0 && c > stack[len(stack) - 1] && BANK_LEN - i - 1 >= 12 - len(stack) do pop(&stack)
             append(&stack, c)
         }
 
         // Part 1
-        second_max_c := '1'
-        // Edge case: max element is the last, so search the start of the array for the next highest
-        if max_i == len(bank) - 1
-        {
-            for c in bank[:len(bank) - 1] do second_max_c = max(second_max_c, c)
-            local_results[0] += 10 * int(second_max_c - '0') + int(max_c) - '0'
-        }
-        else
-        {
-            for c in bank[max_i+1:] do second_max_c = max(second_max_c, c)
-            local_results[0] += 10 * int(max_c - '0') + int(second_max_c) - '0'
-        }
+        second_digit: rune
+        for c in bank[first_digit_idx+1:] do second_digit = max(second_digit, c)
+        local_results[0] += 10 * int(first_digit - '0') + int(second_digit) - '0'
 
         // Part 2:
         multiplier := 1

@@ -7,7 +7,7 @@ import "core:sync"
 import "core:thread"
 import vmem "core:mem/virtual"
 
-NUMBER_OF_CORES := os.processor_core_count()
+NUMBER_OF_CORES: int
 BARRIER: sync.Barrier
 
 Results :: struct {
@@ -16,6 +16,7 @@ Results :: struct {
 
 main :: proc()
 {
+  NUMBER_OF_CORES = os.processor_core_count()
   threads := make([]^thread.Thread, NUMBER_OF_CORES, context.temp_allocator)
   sync.barrier_init(&BARRIER, NUMBER_OF_CORES)
   for i in 0..<NUMBER_OF_CORES do threads[i] = thread.create_and_start_with_data(rawptr(uintptr(i)), entry_point)

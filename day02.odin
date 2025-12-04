@@ -44,18 +44,18 @@ solve_day_02 :: proc() -> Results
         {
             // Treat each half of the interval as another interval.
             left_interval: [2]int
-            right_start := strconv.atoi(start[length  / 2 :])
-            right_end := strconv.atoi(end[(length + int(start_is_odd)) / 2 :])
-            if same_length do left_interval = { strconv.atoi(start[:length/2]), strconv.atoi(end[:length/2]) }
+            right_start, _ := strconv.parse_int(start[length  / 2 :])
+            right_end, _ := strconv.parse_int(end[(length + int(start_is_odd)) / 2 :])
+            if same_length do left_interval = { strconv.parse_int(start[:length/2]) or_else 0, strconv.parse_int(end[:length/2]) or_else 0 }
             // Start is odd, so increase it to the next power of 10
             else if start_is_odd
             {
-                left_interval = { next_power_of_10(strconv.atoi(start[:length/2])), strconv.atoi(end[:(length+1)/2]) }
+                left_interval = { next_power_of_10(strconv.parse_int(start[:length/2]) or_else 0), strconv.parse_int(end[:(length+1)/2]) or_else 0 }
                 right_start = 0
             }
             else // End is odd, so shift it to (the next power of 10 after start) - 1
             {
-                lstart := strconv.atoi(start[:length/2])
+                lstart, _ := strconv.parse_int(start[:length/2])
                 left_interval = { lstart, next_power_of_10(lstart) - 1 }
                 right_end = left_interval[1]
             }
@@ -77,13 +77,13 @@ solve_day_02 :: proc() -> Results
 
         // Part 2:
         max_pattern_length := len(end) / 2
-        s := strconv.atoi(start)
-        e := strconv.atoi(end)
+        s, _ := strconv.parse_int(start)
+        e, _ := strconv.parse_int(end)
         buffer := make([]u8, 16)
         // For every number in the range s-e
         for n in s..=e
         {
-            n_str := strconv.itoa(buffer, n)
+            n_str := strconv.write_int(buffer, i64(n), 10)
             n_len := len(n_str)
             // Try different pattern lengths
             if n_len > 1 do for plen in 1..=max_pattern_length do if n_len % plen == 0

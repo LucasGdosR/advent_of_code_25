@@ -17,8 +17,6 @@ solve_day_03 :: proc() -> Results
     local_results: [2]int
     stack := make([dynamic]rune, 0, 100)
 
-    sync.barrier_wait(&BARRIER)
-
     start_row, end_row := split_count_evenly(LINE_COUNT)
     start_i, end_i := start_row * LINE_WIDTH, end_row * LINE_WIDTH - int(this_idx == NUMBER_OF_CORES - 1)
     it := string(INPUT[start_i:end_i])

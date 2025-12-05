@@ -48,7 +48,7 @@ solve_day_04_st :: proc() -> Results
         for pr_ij in prs_ij do if (M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE do results[0] += 1
 
         // Part 2
-        for
+        for//ever
         {
             prs_len := len(prs_ij)
             for i := prs_len - 1; i >= 0; i-=1
@@ -63,7 +63,7 @@ solve_day_04_st :: proc() -> Results
                     i_lb := pr_i == 0 ? pr_i : pr_i - 1
                     i_ub := pr_i == SIDE - 1 ? pr_i : pr_i + 1
                     j_lb := pr_j == 0 ? pr_j : pr_j - 1
-                    j_ub := pr_j + 1
+                    j_ub := pr_j == SIDE - 1 ? pr_j : pr_j + 1
                     for ii in i_lb..=i_ub do for jj in j_lb..=j_ub do (M^)[ii][jj] -= (1 << 1) // Never flip the first bit!
                 }
             }

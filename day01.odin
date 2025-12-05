@@ -1,6 +1,5 @@
 package aoc
 
-import "core:os"
 import "core:strconv"
 import "core:strings"
 
@@ -10,9 +9,7 @@ solve_day_01 :: proc() -> Results
     {
         results: [2]int
         curr := 50
-        input, ok := os.read_entire_file("input/01")
-        if !ok do os.exit(1)
-        it := string(input)
+        it := string(INPUT)
 
         for line in strings.split_lines_iterator(&it)
         {

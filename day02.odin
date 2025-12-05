@@ -1,7 +1,6 @@
 #+private file
 package aoc
 
-import "core:os"
 import "core:strconv"
 import "core:strings"
 import "core:sync"
@@ -121,9 +120,7 @@ next_power_of_10 :: proc(n: int) -> int
 
 make_intervals :: proc()
 {
-    input, ok := os.read_entire_file("input/02")
-    if !ok do os.exit(1)
-    it := string(input)
+    it := string(INPUT)
 
     dyn_arr := make([dynamic][2]string, 0, INTERVALS)
 

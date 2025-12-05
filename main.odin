@@ -5,10 +5,12 @@ import "core:math"
 import "core:os"
 import "core:sync"
 import "core:thread"
+import "core:time"
 import vmem "core:mem/virtual"
 
 NUMBER_OF_CORES: int
 BARRIER: sync.Barrier
+INPUT: []u8
 
 Results :: struct {
   p1, p2: string
@@ -42,10 +44,28 @@ entry_point :: proc(data: rawptr)
   context.allocator = allocator
 
   for solve_day, day in solutions {
+    // Reading the input is not part of the benchmark.
+    if i == 0
+    {
+      ok: bool
+      INPUT, ok = os.read_entire_file(fmt.aprintf(
+        "input/%v%v",
+        (day+1)/10, (day+1)%10))
+      if !ok
+      {
+        fmt.println("File for day", day+1, "does not exist.")
+        os.exit(1)
+      }
+    }
+    sync.barrier_wait(&BARRIER) // Assert all files can read the input.
+
+    start := time.tick_now()
     day_results := solve_day()
-    if i == 0 do os.write_string(results, fmt.aprintfln(
-      "Day %v:\nPart 1: %v\nPart 2: %v\n\n",
-      day+1, day_results.p1, day_results.p2))
+    us := time.duration_microseconds(time.tick_diff(start, time.tick_now()))
+
+    if i == 0 do os.write_string(results, fmt.aprintf(
+      "Day %v:\nPart 1: %v\nPart 2: %v\n\nMicroseconds: %.f\n\n",
+      day+1, day_results.p1, day_results.p2, us))
     free_all(allocator)
   }
 
@@ -92,4 +112,5 @@ solutions := [?] proc() -> Results {
   solve_day_01,
   solve_day_02,
   solve_day_03,
+  solve_day_04,
 }

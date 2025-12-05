@@ -110,7 +110,7 @@ solve_day_02 :: proc() -> Results
 }
 
 @private // This helper function might be useful somewhere else
-next_power_of_10 :: proc(n: int) -> int
+next_power_of_10 :: #force_inline proc(n: int) -> int
 {
     if n == 0 do return 1
     p := 10
@@ -118,7 +118,7 @@ next_power_of_10 :: proc(n: int) -> int
     return p
 }
 
-make_intervals :: proc()
+make_intervals :: #force_inline proc()
 {
     it := string(INPUT)
 

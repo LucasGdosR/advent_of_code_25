@@ -74,7 +74,7 @@ entry_point :: proc(data: rawptr)
 }
 
 // Inclusive [start, end) non-inclusive
-split_count_evenly :: proc(count: int) -> (start: int, end: int)
+split_count_evenly :: #force_inline proc(count: int) -> (start: int, end: int)
 {
   this_idx := context.user_index
 
@@ -89,7 +89,7 @@ split_count_evenly :: proc(count: int) -> (start: int, end: int)
 }
 
 // Used for non-standard line lengths.
-split_lines_roughly :: proc(data: []byte) -> (start: int, end: int)
+split_lines_roughly :: #force_inline proc(data: []byte) -> (start: int, end: int)
 {
   start, end = split_count_evenly(len(data))
   if start != 0
@@ -101,7 +101,7 @@ split_lines_roughly :: proc(data: []byte) -> (start: int, end: int)
   return
 }
 
-make_results_int :: proc(results: [2]int) -> Results
+make_results_int :: #force_inline proc(results: [2]int) -> Results
 {
     return Results {p1=fmt.aprint(results[0]), p2=fmt.aprint(results[1])}
 }
@@ -112,5 +112,6 @@ solutions := [?] proc() -> Results {
   solve_day_01,
   solve_day_02,
   solve_day_03,
-  solve_day_04,
+  solve_day_04_st,
+  solve_day_05,
 }

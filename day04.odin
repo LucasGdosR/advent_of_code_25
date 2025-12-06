@@ -1,7 +1,6 @@
 #+private file
 package aoc
 
-import "core:fmt"
 import "core:sync"
 
 SIDE :: 139
@@ -41,14 +40,14 @@ solve_day_04_st :: proc() -> Results
                 my_neighbors: int
                 j_lb := j == 0 ? j : j - 1
                 j_ub := j == SIDE - 1 ? j : j + 1
-                for ii in i_lb..=i_ub do for jj in j_lb..=j_ub do if ii != i || jj != j do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+                for ii in i_lb..=i_ub do for jj in j_lb..=j_ub do my_neighbors += int((M^)[ii][jj] & MASK != 0)
                 (M^)[i][j] = u8((my_neighbors << 1) | 1)
             }
         }
 
         // Part 1
-        CAN_REMOVE :: (4 << 1) | 1
-        for pr_ij in prs_ij do if (M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE do results[0] += 1
+        CAN_REMOVE :: (5 << 1) | 1
+        for pr_ij in prs_ij do results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
 
         // Part 2
         for//ever
@@ -95,18 +94,12 @@ solve_day_04_st :: proc() -> Results
  ******************************************************************************************/
 
 global_results: [2]int
-global_might_be_done: []bool
-global_is_done: []bool
+global_is_done: bool
 
 @private
 solve_day_04_mt :: proc() -> Results
 {
     this_idx := context.user_index
-    if this_idx == 0
-    {
-        global_might_be_done = make([]bool, NUMBER_OF_CORES)
-        global_is_done = make([]bool, NUMBER_OF_CORES)
-    }
 
     local_results: [2]int
     M := cast(^[SIDE][SIDE+1]u8)raw_data(INPUT)
@@ -118,79 +111,104 @@ solve_day_04_mt :: proc() -> Results
 
     // Paper rolls are split into three different dynamic arrays per thread based on their `i` coordinate.
     // This allows us to not have to use conditionals based on `i` later.
-    prs_ij_upper_bound := make([dynamic][3]u8, 0, has_upper_neighbor ? SIDE : 0)
-    prs_ij := make([dynamic][3]u8, 0, int(e - s - u8(has_lower_neighbor) - u8(has_upper_neighbor)) * SIDE)
-    prs_ij_lower_bound := make([dynamic][3]u8, 0, has_lower_neighbor ? SIDE : 0)
+    prs_ij_ub := make([dynamic][2]u8, 0, has_upper_neighbor ? SIDE : 0)
+    prs_ij    := make([dynamic][2]u8, 0, int(e - s - u8(has_lower_neighbor) - u8(has_upper_neighbor)) * SIDE)
+    prs_ij_lb := make([dynamic][2]u8, 0, has_lower_neighbor ? SIDE : 0)
 
     // Instead of a single loop from start to end, we have one iteration of the loop for the upper bound,
     // then the middle of the range, and then an iteration for the lower bound.
     if has_upper_neighbor {
         for j in u8(0)..<SIDE do if (M^)[s][j] == '@'
         {
+            append(&prs_ij_ub, [2]u8{s, j})
             my_neighbors: int
             j_lb := j == 0 ? j : j - 1
-            for i in s-1..=s+1 do for jj in j_lb..=j+1 do if i != s || jj != j do my_neighbors += int((M^)[i][jj] == '@')
-            append(&prs_ij_upper_bound, [3]u8{s, j, u8(my_neighbors)})
+            for ii in s-1..=s+1 do for jj in j_lb..=j+1 do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+            (M^)[s][j] = u8((my_neighbors << 1) | 1)
         }
     }
     else do for j in u8(0)..<SIDE do if (M^)[0][j] == '@' // Might as well deal with this and get rid of `i_lb``
     {
+        append(&prs_ij, [2]u8{0, j})
         my_neighbors: int
         j_lb := j == 0 ? j : j - 1
-        #unroll for i in 0..=1 do for jj in j_lb..=j+1 do if i != 0 || jj != j do my_neighbors += int((M^)[i][jj] == '@')
-        append(&prs_ij, [3]u8{0, j, u8(my_neighbors)})
+        #unroll for ii in 0..=1 do for jj in j_lb..=j+1 do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+        (M^)[0][j] = u8((my_neighbors << 1) | 1)
     }
 
     for i in s+1..<e-1 do for j in u8(0)..<SIDE do if (M^)[i][j] == '@'
     {
+        append(&prs_ij, [2]u8{i, j})
         my_neighbors: int
         j_lb := j == 0 ? j : j - 1
-        for ii in i-1..=i+1 do for jj in j_lb..=j+1 do if ii != i || jj != j do my_neighbors += int((M^)[ii][jj] == '@')
-        append(&prs_ij, [3]u8{i, j, u8(my_neighbors)})
+        for ii in i-1..=i+1 do for jj in j_lb..=j+1 do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+        (M^)[i][j] = u8((my_neighbors << 1) | 1)
     }
 
     if has_lower_neighbor
     {
         for j in u8(0)..<SIDE do if (M^)[e-1][j] == '@'
         {
+            append(&prs_ij_lb, [2]u8{e-1, j})
             my_neighbors: int
             j_lb := j == 0 ? j : j - 1
-            for i in e-2..=e do for jj in j_lb..=j+1 do if i != e-1 || jj != j do my_neighbors += int((M^)[i][jj] == '@')
-            append(&prs_ij_lower_bound, [3]u8{e-1, j, u8(my_neighbors)})
+            for ii in e-2..=e do for jj in j_lb..=j+1 do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+            (M^)[e-1][j] = u8((my_neighbors << 1) | 1)
         }
     }
     else do for j in u8(0)..<SIDE do if (M^)[SIDE-1][j] == '@' // Might as well deal with this and get rid of `i_ub`
     {
+        append(&prs_ij, [2]u8{SIDE-1, j})
         my_neighbors: int
         j_lb := j == 0 ? j : j - 1
         j_ub := j == SIDE-1 ? j : j + 1
-        #unroll for i in SIDE-2..=SIDE-1 do for jj in j_lb..=j_ub do if i != SIDE-1 || jj != j do my_neighbors += int((M^)[i][jj] == '@')
-        append(&prs_ij, [3]u8{SIDE-1, j, u8(my_neighbors)})
+        #unroll for ii in SIDE-2..=SIDE-1 do for jj in j_lb..=j_ub do my_neighbors += int((M^)[ii][jj] & MASK != 0)
+        (M^)[SIDE-1][j] = u8((my_neighbors << 1) | 1)
     }
 
     // Part 1
-    for pr_ij in prs_ij_upper_bound do if pr_ij[2] < 4 do local_results[0] += 1
-    for pr_ij in prs_ij             do if pr_ij[2] < 4 do local_results[0] += 1
-    for pr_ij in prs_ij_lower_bound do if pr_ij[2] < 4 do local_results[0] += 1
+    CAN_REMOVE :: (5 << 1) | 1
+    for pr_ij in prs_ij_ub do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
+    for pr_ij in prs_ij    do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
+    for pr_ij in prs_ij_lb do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
     sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
 
-    // Part 2
-    sync.barrier_wait(&BARRIER) // Ensure globals were made by thread 0.
-    fmt.println(global_results[0])
-    // TODO
+    // Sync at this point so no paper rolls are removed while some thread is counting neighbors.
+    sync.barrier_wait(&BARRIER)
 
-    /*
-     * This is where most changes need to happen.
-     * Each thread can only modify
+    /* Part 2:
+     * Each thread can freely modify neighbors of `prs_ij`, but not of `ub/lb`.
+     * Neighbor count must be recomputed for every paper roll on boundaries between threads,
+     * and then the cell is removed and mutates only neighbors in the thread's domain.
      */
     for//ever
     {
-        prs_len := len(prs_ij)
-        for i := prs_len - 1; i >= 0; i-=1
+        prs_len := len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub)
+
+        // Upper bounds
+        for i := len(prs_ij_ub) - 1; i >= 0; i-=1
+        {
+            pr_i, pr_j := prs_ij_ub[i][0], prs_ij_ub[i][1]
+            j_lb := pr_j == 0 ? pr_j : pr_j - 1
+
+            my_neighbors: u8
+            for ii in pr_i-1..=pr_i+1 do for jj in j_lb..=pr_j+1 do my_neighbors += (M^)[ii][jj] & 1
+
+            if my_neighbors < 5
+            {
+                unordered_remove(&prs_ij_ub, i)
+                (M^)[pr_i][pr_j] = 0 // Remove the paper so neighboring threads can recompute.
+                local_results[1] += 1
+                for jj in j_lb..=pr_j+1 do (M^)[pr_i+1][jj] -= (1 << 1) // Only decrement count from cells in thread's domain.
+            }
+        }
+
+        // Thread's domain
+        for i := len(prs_ij) - 1; i >= 0; i-=1
         {
             pr_i, pr_j := prs_ij[i][0], prs_ij[i][1]
 
-            if (M^)[pr_i][pr_j] < 4
+            if (M^)[pr_i][pr_j] < CAN_REMOVE
             {
                 unordered_remove(&prs_ij, i)
                 (M^)[pr_i][pr_j] = 0 // Remove the paper so neighboring threads can recompute.
@@ -199,14 +217,85 @@ solve_day_04_mt :: proc() -> Results
                 i_lb := pr_i == 0 ? pr_i : pr_i - 1
                 i_ub := pr_i == SIDE - 1 ? pr_i : pr_i + 1
                 j_lb := pr_j == 0 ? pr_j : pr_j - 1
-                j_ub := pr_j + 1
-                for ii in i_lb..=i_ub do for jj in j_lb..=j_ub do (M^)[ii][jj] -= (1 << 1) // Never flip the first bit!
+                j_ub := pr_j == SIDE - 1 ? pr_j : pr_j + 1
+                for ii in i_lb..=i_ub do for jj in j_lb..=j_ub do (M^)[ii][jj] -= (1 << 1)
             }
         }
-        if prs_len == len(prs_ij) do break
-        break
-    }
 
+        // Lower bounds
+        for i := len(prs_ij_lb) - 1; i >= 0; i-=1
+        {
+            pr_i, pr_j := prs_ij_lb[i][0], prs_ij_lb[i][1]
+            j_lb := pr_j == 0 ? pr_j : pr_j - 1
+
+            my_neighbors: u8
+            for ii in pr_i-1..=pr_i+1 do for jj in j_lb..=pr_j+1 do my_neighbors += (M^)[ii][jj] & 1
+
+            if my_neighbors < 5
+            {
+                unordered_remove(&prs_ij_lb, i)
+                (M^)[pr_i][pr_j] = 0 // Remove the paper so neighboring threads can recompute.
+                local_results[1] += 1
+                for jj in j_lb..=pr_j+1 do (M^)[pr_i-1][jj] -= (1 << 1) // Only decrement count from cells in thread's domain.
+            }
+        }
+
+        // This *might* be a stopping point.
+        if prs_len == len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub)
+        {
+            global_is_done = true
+            sync.barrier_wait(&BARRIER)
+
+            // Double check: can this thread make any changes? Check boundaries only.
+            // Upper bounds
+            for i := len(prs_ij_ub) - 1; i >= 0; i-=1
+            {
+                pr_i, pr_j := prs_ij_ub[i][0], prs_ij_ub[i][1]
+                j_lb := pr_j == 0 ? pr_j : pr_j - 1
+
+                my_neighbors: u8
+                for ii in pr_i-1..=pr_i+1 do for jj in j_lb..=pr_j+1 do my_neighbors += (M^)[ii][jj] & 1
+
+                if my_neighbors < 5
+                {
+                    unordered_remove(&prs_ij_ub, i)
+                    (M^)[pr_i][pr_j] = 0
+                    local_results[1] += 1
+                    for jj in j_lb..=pr_j+1 do (M^)[pr_i+1][jj] -= (1 << 1)
+                }
+            }
+            // Lower bounds
+            for i := len(prs_ij_lb) - 1; i >= 0; i-=1
+            {
+                pr_i, pr_j := prs_ij_lb[i][0], prs_ij_lb[i][1]
+                j_lb := pr_j == 0 ? pr_j : pr_j - 1
+
+                my_neighbors: u8
+                for ii in pr_i-1..=pr_i+1 do for jj in j_lb..=pr_j+1 do my_neighbors += (M^)[ii][jj] & 1
+
+                if my_neighbors < 5
+                {
+                    unordered_remove(&prs_ij_lb, i)
+                    (M^)[pr_i][pr_j] = 0
+                    local_results[1] += 1
+                    for jj in j_lb..=pr_j+1 do (M^)[pr_i-1][jj] -= (1 << 1)
+                }
+            }
+            if prs_len != len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub) do global_is_done = false
+            sync.barrier_wait(&BARRIER)
+
+            // At this point, `global_is_done` was set to true before checking, followed by a fence.
+            // If any thread made changes, it was set to false, followed by a fence.
+            if global_is_done do break
+            // `global_is_done` was set to false at this point. We must ensure everyone sees this,
+            // otherwise a thread might go through the whole loop and set it back to true before
+            // the others can go back to the loop.
+            sync.barrier_wait(&BARRIER)
+        }
+        // Someone made changes, so we have not reached a fixed point. Keep going.
+    }
+    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
+    sync.barrier_wait(&BARRIER)
 
     return this_idx == 0 ? make_results(global_results) : Results{}
 }

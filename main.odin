@@ -26,6 +26,7 @@ main :: proc()
   free_all(context.temp_allocator)
 }
 
+@(private="file")
 entry_point :: proc(data: rawptr)
 {
   i := int(uintptr(data))
@@ -57,7 +58,7 @@ entry_point :: proc(data: rawptr)
         os.exit(1)
       }
     }
-    sync.barrier_wait(&BARRIER) // Assert all files can read the input.
+    sync.barrier_wait(&BARRIER) // Assert all threads can read the input.
 
     start := time.tick_now()
     day_results := solve_day()
@@ -108,10 +109,12 @@ make_results_int :: #force_inline proc(results: [2]int) -> Results
 
 make_results :: proc{make_results_int}
 
+@(private="file")
 solutions := [?] proc() -> Results {
   solve_day_01,
   solve_day_02,
   solve_day_03,
-  solve_day_04_st,
+  solve_day_04_mt,
+  //solve_day_04_st,
   solve_day_05,
 }

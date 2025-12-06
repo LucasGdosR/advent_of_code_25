@@ -16,3 +16,7 @@ I was inspired by this [article](https://www.rfleury.com/p/multi-core-by-default
 02: Great problem for multithreading. The input has independent tasks, and each task can take a variable amount of work. A way to do load balancing among threads is to have an atomic counter that's incremented to see which task each thread gets. This way, a thread with short tasks can get more tasks than a thread with long tasks. When it comes to parsing the input text, there's a single line. This line could be parsed in parallel, but that's probably negligible.
 
 03: Each thread takes some of the lines to process. All we need to know to do this cleanly is the line length and the number of lines (or file length). I hard coded them, but this could be read dynamically from the input.
+
+04: TODO: multithreading
+
+05: Parsing intervals, building a single list, sorting it and merging intervals is best done single threaded. We could have each thread parse a subset of the lines, then merge multiple lists, and sorting in parallel is fine with custom implementations, but that's overkill for 177 lines, not to mention inefficient. However! Once the merged intervals are built, we can check if the ids are in intervals in parallel. Split lines roughly, as they don't have the same length, and go to town. The dataset is too small for this to be worth it, though, and the single threaded implementation is faster.

@@ -44,17 +44,19 @@ entry_point :: proc(data: rawptr)
   allocator := vmem.arena_allocator(&thread_arena)
   context.allocator = allocator
 
-  for solve_day, day in solutions {
+  for solve_day, s_idx in solutions {
+    if s_idx == 1 do continue // Day 1 has no multithreaded solution.
     // Reading the input is not part of the benchmark.
+    day := (s_idx / 2) + 1
     if i == 0
     {
       ok: bool
       INPUT, ok = os.read_entire_file(fmt.aprintf(
         "input/%v%v",
-        (day+1)/10, (day+1)%10))
+        day/10, day%10))
       if !ok
       {
-        fmt.println("File for day", day+1, "does not exist.")
+        fmt.println("File for day", day, "does not exist.")
         os.exit(1)
       }
     }
@@ -65,8 +67,8 @@ entry_point :: proc(data: rawptr)
     us := time.duration_microseconds(time.tick_diff(start, time.tick_now()))
 
     if i == 0 do os.write_string(results, fmt.aprintf(
-      "Day %v:\nPart 1: %v\nPart 2: %v\n\nMicroseconds: %.f\n\n",
-      day+1, day_results.p1, day_results.p2, us))
+      "Day %v %v:\nPart 1: %v\nPart 2: %v\n\nMicroseconds: %.f\n\n",
+      day, s_idx & 1 == 0 ? "single-threaded" : "multi-threaded", day_results.p1, day_results.p2, us))
     free_all(allocator)
   }
 
@@ -111,11 +113,18 @@ make_results :: proc{make_results_int}
 
 @(private="file")
 solutions := [?] proc() -> Results {
-  solve_day_01,
-  solve_day_02,
-  solve_day_03,
+  solve_day_01_st,
+  solve_day_01_mt,
+  solve_day_02_st,
+  solve_day_02_mt,
+  solve_day_03_st,
+  solve_day_03_mt,
+  solve_day_04_st,
   solve_day_04_mt,
-  //solve_day_04_st,
-  solve_day_05,
-  solve_day_06,
+  solve_day_05_st,
+  solve_day_05_mt,
+  solve_day_06_st,
+  solve_day_06_mt,
+  //solve_day_07_st,
+  //solve_day_07_mt,
 }

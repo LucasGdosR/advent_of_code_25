@@ -93,8 +93,9 @@ solve_day_04_st :: proc() -> Results
  * Changes regarding the single threaded implementation are commented. Repeated code is not.
  ******************************************************************************************/
 
-global_results: [2]int
-global_is_done: bool
+ Fixed_Point :: enum { No, Maybe, Yes }
+ global_is_done: Fixed_Point
+ global_results: [2]int
 
 @private
 solve_day_04_mt :: proc() -> Results
@@ -243,7 +244,7 @@ solve_day_04_mt :: proc() -> Results
         // This *might* be a stopping point.
         if prs_len == len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub)
         {
-            global_is_done = true
+            global_is_done = .Maybe
             sync.barrier_wait(&BARRIER)
 
             // Double check: can this thread make any changes? Check boundaries only.
@@ -281,16 +282,14 @@ solve_day_04_mt :: proc() -> Results
                     for jj in j_lb..=pr_j+1 do (M^)[pr_i-1][jj] -= (1 << 1)
                 }
             }
-            if prs_len != len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub) do global_is_done = false
+            // Which memory ordering?
+            if prs_len != len(prs_ij) + len(prs_ij_lb) + len(prs_ij_ub) do sync.atomic_store_explicit(&global_is_done, Fixed_Point.No, sync.Atomic_Memory_Order.Release)
+            else do sync.atomic_compare_exchange_weak_explicit(&global_is_done, Fixed_Point.Maybe, Fixed_Point.Yes, sync.Atomic_Memory_Order.Acquire, sync.Atomic_Memory_Order.Relaxed)
             sync.barrier_wait(&BARRIER)
 
             // At this point, `global_is_done` was set to true before checking, followed by a fence.
             // If any thread made changes, it was set to false, followed by a fence.
-            if global_is_done do break
-            // `global_is_done` was set to false at this point. We must ensure everyone sees this,
-            // otherwise a thread might go through the whole loop and set it back to true before
-            // the others can go back to the loop.
-            sync.barrier_wait(&BARRIER)
+            if global_is_done == .Yes do break
         }
         // Someone made changes, so we have not reached a fixed point. Keep going.
     }

@@ -3,7 +3,7 @@ package aoc
 import "core:strconv"
 import "core:strings"
 
-solve_day_01 :: proc() -> Results
+solve_day_01_st :: proc() -> Results
 {
     if context.user_index == 0
     {
@@ -23,4 +23,9 @@ solve_day_01 :: proc() -> Results
         return make_results(results)
     }
     else do return Results{}
+}
+
+solve_day_01_mt :: proc() -> Results
+{
+    return Results{}
 }

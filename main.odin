@@ -45,7 +45,7 @@ entry_point :: proc(data: rawptr)
   context.allocator = allocator
 
   for solve_day, s_idx in solutions {
-    if s_idx == 1 do continue // Day 1 has no multithreaded solution.
+    if s_idx == 1 || s_idx == 13 do continue // Days 1 and 7 have no multithreaded implementation.
     // Reading the input is not part of the benchmark.
     day := (s_idx / 2) + 1
     if i == 0
@@ -125,6 +125,6 @@ solutions := [?] proc() -> Results {
   solve_day_05_mt,
   solve_day_06_st,
   solve_day_06_mt,
-  //solve_day_07_st,
-  //solve_day_07_mt,
+  solve_day_07_st,
+  solve_day_07_mt,
 }

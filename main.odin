@@ -127,4 +127,6 @@ solutions := [?] proc() -> Results {
   solve_day_06_mt,
   solve_day_07_st,
   solve_day_07_mt,
+  solve_day_08_st,
+  solve_day_08_mt,
 }

@@ -1,7 +1,6 @@
 #+private file
 package aoc
 
-import "core:math"
 import "core:sync"
 import pq "core:container/priority_queue"
 import "core:strconv"
@@ -34,7 +33,6 @@ solve_day_08_st :: proc() -> Results
 
 global_V: [][3]int
 global_E: [dynamic][3]int
-global_starts_ends: []int
 
 @private
 solve_day_08_mt :: proc() -> Results
@@ -46,8 +44,8 @@ solve_day_08_mt :: proc() -> Results
         length := len(global_V)
         assert(length == INPUT_LEN)
         global_E = make([dynamic][3]int, length * (length - 1) / 2)
+        split_linear_work(length)
     }
-    else if this_idx == 1 do load_balance()
 
     sync.barrier_wait(&BARRIER)
 
@@ -178,19 +176,4 @@ mul_3_largest :: proc(uf: uf) -> int
         else if size > k do k = size
     }
     return i * j * k
-}
-
-load_balance :: proc()
-{
-    k :: INPUT_LEN
-    global_starts_ends = make([]int, NUMBER_OF_CORES+1)
-    total_work := k * (k - 1) / 2
-	step := (total_work + NUMBER_OF_CORES - 1) / NUMBER_OF_CORES
-	for start, i := 0, 0; i < NUMBER_OF_CORES; i += 1
-    {
-        // This distributes work evenly between threads. Trust me.
-		end := i == NUMBER_OF_CORES-1 ? k : k - int(math.sqrt(f64(k*k-2*k*(start+1)+start*start+2*start-2*step+1)))
-		global_starts_ends[i+1] = end
-		start = end
-	}
 }

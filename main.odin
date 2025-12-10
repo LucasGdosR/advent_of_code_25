@@ -77,7 +77,7 @@ entry_point :: proc(data: rawptr)
 }
 
 // Inclusive [start, end) non-inclusive
-split_count_evenly :: #force_inline proc(count: int) -> (start: int, end: int)
+split_count_evenly :: #force_inline proc(count: int) -> (start, end: int)
 {
   this_idx := context.user_index
 
@@ -92,7 +92,7 @@ split_count_evenly :: #force_inline proc(count: int) -> (start: int, end: int)
 }
 
 // Used for non-standard line lengths.
-split_lines_roughly :: #force_inline proc(data: []byte) -> (start: int, end: int)
+split_lines_roughly :: #force_inline proc(data: []byte) -> (start, end: int)
 {
   start, end = split_count_evenly(len(data))
   if start != 0
@@ -102,6 +102,23 @@ split_lines_roughly :: #force_inline proc(data: []byte) -> (start: int, end: int
   }
   if end != len(data) do for data[end] != '\n' do end += 1
   return
+}
+
+global_starts_ends: []int
+// Used for ranges with linear work (first index has twice the average work, last has 0).
+// Should be used by a single thread.
+split_linear_work :: #force_inline proc(k: int)
+{
+  global_starts_ends = make([]int, NUMBER_OF_CORES+1)
+  total_work := k * (k - 1) / 2
+	step := (total_work + NUMBER_OF_CORES - 1) / NUMBER_OF_CORES
+	for start, i := 0, 0; i < NUMBER_OF_CORES; i += 1
+  {
+    // This distributes work evenly between threads. Trust me.
+		end := i == NUMBER_OF_CORES-1 ? k : k - int(math.sqrt(f64(k*k-2*k*(start+1)+start*start+2*start-2*step+1)))
+		global_starts_ends[i+1] = end
+		start = end
+	}
 }
 
 make_results_int :: #force_inline proc(results: [2]int) -> Results
@@ -129,4 +146,6 @@ solutions := [?] proc() -> Results {
   solve_day_07_mt,
   solve_day_08_st,
   solve_day_08_mt,
+  solve_day_09_st,
+  solve_day_09_mt,
 }

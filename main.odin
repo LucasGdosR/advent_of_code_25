@@ -148,4 +148,6 @@ solutions := [?] proc() -> Results {
   solve_day_08_mt,
   solve_day_09_st,
   solve_day_09_mt,
+  solve_day_10_st,
+  solve_day_10_mt,
 }

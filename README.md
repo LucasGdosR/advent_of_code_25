@@ -34,3 +34,5 @@ This was a pretty interesting problem to multithread. Each thread gets a range o
 09: Same thing about linear work, so I pulled that logic into `main.odin`. Other than that, parse the input single threaded, then process each point in parallel, then go through all solutions and get the max of them. The main trick here is to store each thread's result in a shared array and then look for the max. Otherwise, this would require locking, reading the current shared result, checking if the local result is greater, storing if it is, and then unlocking.
 
 10: Lines are independent, so split lines between threads. Here there's a BFS solution to part 1 in Odin and integer linear programming solutions using scipy to both parts in Python, since there's no ILP Odin library that I'm aware of.
+
+11: Each depth first search is independent, so each is done by a different thread.

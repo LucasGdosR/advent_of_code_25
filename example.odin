@@ -11,7 +11,7 @@ key :: struct {
 }
 
 @private
-example_ST :: proc() -> Results
+example_ST :: proc() -> [2]int
 {
     // Reading input is done by a single thread, so we wrap this in an "if idx == 0" block and sync with a barrier
     LR, LR_map, starting_points := parse_input()
@@ -32,7 +32,7 @@ example_ST :: proc() -> Results
         results[1] *= count / l
     }
     // Sync and return results. It'd be fine for every thread to send the results.
-    return make_results(results)
+    return results
 }
 
 global_LR: string
@@ -42,7 +42,7 @@ global_results: [2]int
 global_partial_results: []int
 
 @private
-example_MT :: proc() -> Results
+example_MT :: proc() -> [2]int
 {
     this_idx := context.user_index
     if this_idx == 0
@@ -79,8 +79,8 @@ example_MT :: proc() -> Results
         global_results[1] = acc
     }
 
-    if this_idx == 0 do return make_results(global_results)
-    else do return Results{}
+    if this_idx == 0 do return global_results
+    else do return [2]int{}
 }
 
 parse_input :: proc() -> (string, map[key]string, []string)

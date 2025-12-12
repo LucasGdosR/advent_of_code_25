@@ -12,18 +12,18 @@ global_intervals: [][2]int
 global_results: [2]int
 
 @private
-solve_day_05_st :: proc() -> Results
+solve_day_05_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
         intervals, result_part_2 := make_merged_intervals()
-        return make_results([2]int{ check_ids(intervals, 0, len(INPUT)), result_part_2 })
+        return [2]int{ check_ids(intervals, 0, len(INPUT)), result_part_2 }
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 @private
-solve_day_05_mt :: proc() -> Results
+solve_day_05_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
     if this_idx == 0 do global_intervals, global_results[1] = make_merged_intervals()
@@ -35,7 +35,7 @@ solve_day_05_mt :: proc() -> Results
     sync.atomic_add_explicit(&global_results[0], check_ids(global_intervals, s, e), sync.Atomic_Memory_Order.Relaxed)
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(global_results) : Results{}
+    return this_idx == 0 ? global_results : [2]int{}
 }
 
 make_merged_intervals :: proc() -> ([][2]int, int)

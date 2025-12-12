@@ -1,11 +1,11 @@
 #+private file
 package aoc
 
-import "core:sync"
 import "core:strings"
+import "core:sync"
 
 @private
-solve_day_11_st :: proc() -> Results
+solve_day_11_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -29,9 +29,9 @@ solve_day_11_st :: proc() -> Results
         fft_out := dfs(G, "fft", "out", &memo)
         results[1] = svr_dac * dac_fft * fft_out + svr_fft * fft_dac * dac_out
 
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 global_G: map[string][]string
@@ -43,7 +43,7 @@ global_dac_out: int
 global_fft_out: int
 
 @private
-solve_day_11_mt :: proc() -> Results
+solve_day_11_mt :: proc() -> [2]int
 {
     assert(NUMBER_OF_CORES >= 7, "Day 11 assumes at least 7 threads exist.")
     this_idx := context.user_index
@@ -71,9 +71,9 @@ solve_day_11_mt :: proc() -> Results
     if this_idx == 0
     {
         local_results[1] = global_svr_dac * global_dac_fft * global_fft_out + global_svr_fft * global_fft_dac * global_dac_out
-        return make_results(local_results)
+        return local_results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 build_graph :: proc() -> map[string][]string

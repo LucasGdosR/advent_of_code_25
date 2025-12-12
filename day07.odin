@@ -1,15 +1,13 @@
 #+private file
 package aoc
 
-import "core:strings"
-
 HEIGHT :: 142
 WIDTH :: 141
 LINE_BREAK :: 1
 LINE_WIDTH :: WIDTH + LINE_BREAK
 
 @private
-solve_day_07_st :: proc() -> Results
+solve_day_07_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -21,9 +19,9 @@ solve_day_07_st :: proc() -> Results
         CAPACITY :: int((TOTAL_BEAM_SPLITTERS / LOAD_FACTOR) + 1)
         memo := make(map[u16]int, CAPACITY)
         result_part_2 := dfs(grid, &memo, 2, start_j)
-        return make_results([2]int{ len(memo), result_part_2 })
+        return [2]int{ len(memo), result_part_2 }
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 dfs :: proc(grid: ^[HEIGHT][LINE_WIDTH]byte, memo: ^map[u16]int, i, j: u16) -> int
@@ -50,7 +48,7 @@ dfs :: proc(grid: ^[HEIGHT][LINE_WIDTH]byte, memo: ^map[u16]int, i, j: u16) -> i
 }
 
 @private
-solve_day_07_mt :: proc() -> Results
+solve_day_07_mt :: proc() -> [2]int
 {
-    return Results{}
+    return [2]int{}
 }

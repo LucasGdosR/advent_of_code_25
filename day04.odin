@@ -18,7 +18,7 @@ PAPER_ROLL_TOTAL :: 12_563 // SIDE * SIDE would also be fine
 MASK :: ~(u8('.') | u8('\n'))
 
 @private
-solve_day_04_st :: proc() -> Results
+solve_day_04_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -72,9 +72,9 @@ solve_day_04_st :: proc() -> Results
             if prs_len == len(prs_ij) do break
         }
 
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 /******************************************************************************************
@@ -98,7 +98,7 @@ solve_day_04_st :: proc() -> Results
  global_results: [2]int
 
 @private
-solve_day_04_mt :: proc() -> Results
+solve_day_04_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
 
@@ -296,5 +296,5 @@ solve_day_04_mt :: proc() -> Results
     sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(global_results) : Results{}
+    return this_idx == 0 ? global_results : [2]int{}
 }

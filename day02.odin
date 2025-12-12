@@ -12,7 +12,7 @@ global_results: [2]int
 global_task_counter: int
 
 @private
-solve_day_02_st :: proc() -> Results
+solve_day_02_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -20,13 +20,13 @@ solve_day_02_st :: proc() -> Results
         intervals := make_intervals()
         buffer := make([]u8, 16)
         for interval in intervals do results += process_interval(interval, buffer)
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 @private
-solve_day_02_mt :: proc() -> Results
+solve_day_02_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
     local_results: [2]int
@@ -49,7 +49,7 @@ solve_day_02_mt :: proc() -> Results
 
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(global_results) : Results{}
+    return this_idx == 0 ? global_results : [2]int{}
 }
 
 make_intervals :: proc() -> [][2]string

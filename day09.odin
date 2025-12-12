@@ -12,7 +12,7 @@ global_HL: []line
 global_VL: []line
 
 @private
-solve_day_09_st :: proc() -> Results
+solve_day_09_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -30,16 +30,16 @@ solve_day_09_st :: proc() -> Results
             if area > results[1] && is_valid(p1, p2) do results[1] = area
         }
 
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 global_points: [][2]int
 global_results: [][2]int
 
 @private
-solve_day_09_mt :: proc() -> Results
+solve_day_09_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
     local_results: [2]int
@@ -74,9 +74,9 @@ solve_day_09_mt :: proc() -> Results
             if res[0] > results[0] do results[0] = res[0]
             if res[1] > results[1] do results[1] = res[1]
         }
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 read_points :: proc() -> [][2]int

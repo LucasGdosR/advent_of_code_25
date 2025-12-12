@@ -9,6 +9,8 @@ For this year's AoC, my challenge is making a single program that solves the ent
 
 I was inspired by this [article](https://www.rfleury.com/p/multi-core-by-default) to make this multi-threaded in a simple way.
 
+Total runtime picking the faster out of the single-threaded and the multi-threaded implementation each day: sub 24 ms. In order to significantly lower this, I need a better algorithm for day 2 part 2 (currently brute force).
+
 ## Commentary by Day
 
 01: This problem is serial, so every line must be processed sequentially. Adapting it to single threaded execution was trivial.
@@ -17,9 +19,9 @@ I was inspired by this [article](https://www.rfleury.com/p/multi-core-by-default
 
 03: Each thread takes some of the lines to process. All we need to know to do this cleanly is the line length and the number of lines (or file length). I hard coded them, but this could be read dynamically from the input.
 
-### 04: Multithreaded fixed-point algorithm
+### 04: Multithreaded fixed-point algorithm and bit trickery
 
-This was a pretty interesting problem to multithread. Each thread gets a range of rows, and they must check the contents of neighboring rows, which might be owned by other threads. Instead of mutating neighbor counts when removing a cell, I chose to recompute neighbor counts in the rows in the boundaries with other threads, evading WAW race conditions. This was made more efficient by having 3 distinct arrays, one for storing cells in the upper border, another for the lower border, and another for cells deep into the thread's range. This approach of having different arrays based on conditionals instead of testing conditions on array members is based on Data-Oriented Design (dodbook). Back to multithreading, when all threads have reached a local fixed-point, they sync, then confirm they really are in a fixed-point, then sync again, then exit if they really were in a global fixed-point, otherwise they sync once more and go back to the loop.
+04: This was a pretty interesting problem to multithread. Each thread gets a range of rows, and they must check the contents of neighboring rows, which might be owned by other threads. Instead of mutating neighbor counts when removing a cell, I chose to recompute neighbor counts in the rows in the boundaries with other threads, evading WAW race conditions. This was made more efficient by having 3 distinct arrays, one for storing cells in the upper border, another for the lower border, and another for cells deep into the thread's range. This approach of having different arrays based on conditionals instead of testing conditions on array members is based on Data-Oriented Design (dodbook). Back to multithreading, when all threads have reached a local fixed-point, they sync, then confirm they really are in a fixed-point, then sync again, then exit if they really were in a global fixed-point, otherwise they sync once more and go back to the loop.
 
 05: Parsing intervals, building a single list, sorting it and merging intervals is best done single threaded. We could have each thread parse a subset of the lines, then merge multiple lists, and sorting in parallel is fine with custom implementations, but that's overkill for 177 lines, not to mention inefficient. However! Once the merged intervals are built, we can check if the ids are in intervals in parallel. Split lines roughly, as they don't have the same length, and go to town. The dataset is too small for this to be worth it, though, and the single threaded implementation is faster.
 
@@ -33,6 +35,10 @@ This was a pretty interesting problem to multithread. Each thread gets a range o
 
 09: Same thing about linear work, so I pulled that logic into `main.odin`. Other than that, parse the input single threaded, then process each point in parallel, then go through all solutions and get the max of them. The main trick here is to store each thread's result in a shared array and then look for the max. Otherwise, this would require locking, reading the current shared result, checking if the local result is greater, storing if it is, and then unlocking.
 
+### 10: Bit tricks in Odin and ILP with scipy
+
 10: Lines are independent, so split lines between threads. Here there's a BFS solution to part 1 in Odin and integer linear programming solutions using scipy to both parts in Python, since there's no ILP Odin library that I'm aware of.
 
 11: Each depth first search is independent, so each is done by a different thread.
+
+12: Each line is independent, so split chunks at line boundaries.

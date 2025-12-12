@@ -1,10 +1,10 @@
 #+private file
 package aoc
 
-import "core:sync"
 import pq "core:container/priority_queue"
 import "core:strconv"
 import "core:strings"
+import "core:sync"
 
 INPUT_LEN :: 1000
 
@@ -15,7 +15,7 @@ uf :: struct
 }
 
 @private
-solve_day_08_st :: proc() -> Results
+solve_day_08_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -26,16 +26,16 @@ solve_day_08_st :: proc() -> Results
         edges := make([dynamic][3]int, length * (length - 1) / 2)
         fill_edges(edges[:], junction_boxes, 0, length)
 
-        return make_results(kruskal_mst(junction_boxes, edges))
+        return kruskal_mst(junction_boxes, edges)
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 global_V: [][3]int
 global_E: [dynamic][3]int
 
 @private
-solve_day_08_mt :: proc() -> Results
+solve_day_08_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
     if this_idx == 0
@@ -54,7 +54,7 @@ solve_day_08_mt :: proc() -> Results
 
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(kruskal_mst(global_V, global_E)) : Results{}
+    return this_idx == 0 ? kruskal_mst(global_V, global_E) : [2]int{}
 }
 
 read_graph_vertices :: proc() -> [][3]int

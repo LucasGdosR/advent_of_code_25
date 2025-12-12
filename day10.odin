@@ -8,7 +8,7 @@ import "core:strings"
 import "core:sync"
 
 @private
-solve_day_10_st :: proc() -> Results
+solve_day_10_st :: proc() -> [2]int
 {
     if context.user_index == 0
     {
@@ -30,15 +30,15 @@ solve_day_10_st :: proc() -> Results
             // results[1] += lp(buttons, joltage)
             free_all(context.allocator)
         }
-        return make_results(results)
+        return results
     }
-    else do return Results{}
+    else do return [2]int{}
 }
 
 global_results: [2]int
 
 @private
-solve_day_10_mt :: proc() -> Results
+solve_day_10_mt :: proc() -> [2]int
 {
     local_result: int
     start, end := split_lines_roughly(INPUT)
@@ -54,7 +54,7 @@ solve_day_10_mt :: proc() -> Results
     }
     sync.atomic_add_explicit(&global_results[0], local_result, sync.Atomic_Memory_Order.Relaxed)
     sync.barrier_wait(&BARRIER)
-    return context.user_index == 0 ? make_results(global_results) : Results{}
+    return context.user_index == 0 ? global_results : [2]int{}
 }
 
 // 0th index in LSB

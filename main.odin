@@ -12,10 +12,6 @@ NUMBER_OF_CORES: int
 BARRIER: sync.Barrier
 INPUT: []u8
 
-Results :: struct {
-  p1, p2: string
-}
-
 main :: proc()
 {
   NUMBER_OF_CORES = os.processor_core_count()
@@ -44,8 +40,11 @@ entry_point :: proc(data: rawptr)
   allocator := vmem.arena_allocator(&thread_arena)
   context.allocator = allocator
 
+  st_time: [12]f64
+  mt_time: [12]f64
   for solve_day, s_idx in solutions {
-    if s_idx == 1 || s_idx == 13 do continue // Days 1 and 7 have no multithreaded implementation.
+    // Days 1 and 7 have no multithreaded implementation.
+    if s_idx == 1 || s_idx == 13 do continue
     // Reading the input is not part of the benchmark.
     day := (s_idx / 2) + 1
     if i == 0
@@ -65,14 +64,31 @@ entry_point :: proc(data: rawptr)
     start := time.tick_now()
     day_results := solve_day()
     us := time.duration_microseconds(time.tick_diff(start, time.tick_now()))
+    if s_idx % 2 == 0 do st_time[s_idx / 2] = us
+    else do mt_time[s_idx / 2] = us
+    // Days 1 and 7 have no multithreaded implementation, so add single threaded time.
+    if s_idx == 0 || s_idx == 12 do mt_time[s_idx / 2] = us
 
     if i == 0 do os.write_string(results, fmt.aprintf(
       "Day %v %v:\nPart 1: %v\nPart 2: %v\n\nMicroseconds: %.f\n\n",
-      day, s_idx & 1 == 0 ? "single-threaded" : "multi-threaded", day_results.p1, day_results.p2, us))
+      day, s_idx & 1 == 0 ? "single-threaded" : "multi-threaded", day_results[0], day_results[1], us))
     free_all(allocator)
   }
 
-  if i == 0 do os.close(results)
+  if i == 0
+  {
+    total_st_time, total_mt_time, best_total_time: f64
+    for i in 0..<12
+    {
+      total_st_time += st_time[i]
+      total_mt_time += mt_time[i]
+      best_total_time += min(st_time[i], mt_time[i])
+    }
+    os.write_string(results, fmt.aprintf(
+      "Total single-threaded runtime: %.f μs\nTotal multi-threaded runtime: %.f μs\nFastest total runtime (pick ST or MT daily): %.f\n",
+      total_st_time, total_mt_time, best_total_time))
+    os.close(results)
+  }
   vmem.arena_destroy(&thread_arena)
 }
 
@@ -121,15 +137,8 @@ split_linear_work :: #force_inline proc(k: int)
 	}
 }
 
-make_results_int :: #force_inline proc(results: [2]int) -> Results
-{
-    return Results {p1=fmt.aprint(results[0]), p2=fmt.aprint(results[1])}
-}
-
-make_results :: proc{make_results_int}
-
 @(private="file")
-solutions := [?] proc() -> Results {
+solutions := [?] proc() -> [2]int {
   solve_day_01_st,
   solve_day_01_mt,
   solve_day_02_st,
@@ -152,4 +161,6 @@ solutions := [?] proc() -> Results {
   solve_day_10_mt,
   solve_day_11_st,
   solve_day_11_mt,
+  solve_day_12_st,
+  solve_day_12_mt,
 }

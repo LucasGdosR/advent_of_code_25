@@ -1,0 +1,135 @@
+Day 1 single-threaded:
+Part 1: 1081
+Part 2: 6689
+
+Microseconds: 90
+
+Day 2 single-threaded:
+Part 1: 40398804950
+Part 2: 65794984339
+
+Microseconds: 32180
+
+Day 2 multi-threaded:
+Part 1: 40398804950
+Part 2: 65794984339
+
+Microseconds: 7488
+
+Day 3 single-threaded:
+Part 1: 17316
+Part 2: 171741365473332
+
+Microseconds: 239
+
+Day 3 multi-threaded:
+Part 1: 17316
+Part 2: 171741365473332
+
+Microseconds: 546
+
+Day 4 single-threaded:
+Part 1: 1486
+Part 2: 9024
+
+Microseconds: 518
+
+Day 4 multi-threaded:
+Part 1: 1486
+Part 2: 9024
+
+Microseconds: 7037
+
+Day 5 single-threaded:
+Part 1: 577
+Part 2: 350513176552950
+
+Microseconds: 114
+
+Day 5 multi-threaded:
+Part 1: 577
+Part 2: 350513176552950
+
+Microseconds: 728
+
+Day 6 single-threaded:
+Part 1: 5667835681547
+Part 2: 9434900032651
+
+Microseconds: 184
+
+Day 6 multi-threaded:
+Part 1: 5667835681547
+Part 2: 9434900032651
+
+Microseconds: 539
+
+Day 7 single-threaded:
+Part 1: 1619
+Part 2: 23607984027985
+
+Microseconds: 382
+
+Day 8 single-threaded:
+Part 1: 79560
+Part 2: 31182420
+
+Microseconds: 6443
+
+Day 8 multi-threaded:
+Part 1: 79560
+Part 2: 31182420
+
+Microseconds: 8165
+
+Day 9 single-threaded:
+Part 1: 4759531084
+Part 2: 1539238860
+
+Microseconds: 3666
+
+Day 9 multi-threaded:
+Part 1: 4759531084
+Part 2: 1539238860
+
+Microseconds: 2852
+
+Day 10 single-threaded:
+Part 1: 419
+Part 2: 0
+
+Microseconds: 5183
+
+Day 10 multi-threaded:
+Part 1: 419
+Part 2: 0
+
+Microseconds: 3841
+
+Day 11 single-threaded:
+Part 1: 791
+Part 2: 520476725037672
+
+Microseconds: 1487
+
+Day 11 multi-threaded:
+Part 1: 791
+Part 2: 520476725037672
+
+Microseconds: 1921
+
+Day 12 single-threaded:
+Part 1: 534
+Part 2: 0
+
+Microseconds: 143
+
+Day 12 multi-threaded:
+Part 1: 534
+Part 2: 0
+
+Microseconds: 549
+
+Total single-threaded runtime: 50629 μs
+Total multi-threaded runtime: 34138 μs
+Fastest total runtime (pick ST or MT daily): 23782

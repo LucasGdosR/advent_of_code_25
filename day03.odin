@@ -10,14 +10,14 @@ LINE_WIDTH :: BANK_LEN + 1 // '\n'
 LINE_COUNT :: 200
 
 @private
-solve_day_03_st :: proc() -> Results
+solve_day_03_st :: proc() -> [2]int
 {
-    if context.user_index == 0 do return make_results(solve(string(INPUT)))
-    else do return Results{}
+    if context.user_index == 0 do return solve(string(INPUT))
+    else do return [2]int{}
 }
 
 @private
-solve_day_03_mt :: proc() -> Results
+solve_day_03_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
 
@@ -30,7 +30,7 @@ solve_day_03_mt :: proc() -> Results
 
     sync.barrier_wait(&BARRIER)
 
-    return this_idx == 0 ? make_results(global_results) : Results{}
+    return this_idx == 0 ? global_results : [2]int{}
 }
 
 solve :: proc(it: string) -> [2]int

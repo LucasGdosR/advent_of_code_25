@@ -8,7 +8,6 @@ import "core:sync"
 INTERVALS :: 38
 
 global_intervals: [][2]string
-global_results: [2]int
 global_task_counter: int
 
 @private
@@ -28,28 +27,26 @@ solve_day_02_st :: proc() -> [2]int
 @private
 solve_day_02_mt :: proc() -> [2]int
 {
-    this_idx := context.user_index
-    local_results: [2]int
-    if this_idx == 0 do global_intervals = make_intervals()
+    results: [2]int
+    if context.user_index == 0
+    {
+        global_intervals = make_intervals()
+        sync.atomic_store_explicit(&INPUT_PARSED, true, .Release)
+    }
     buffer := make([]u8, 16)
 
-    sync.barrier_wait(&BARRIER)
+    for !sync.atomic_load_explicit(&INPUT_PARSED, .Acquire) {}
 
     interval_count := len(global_intervals)
 
     for//ever
     {
-        interval_idx := sync.atomic_add_explicit(&global_task_counter, 1, sync.Atomic_Memory_Order.Relaxed)
+        interval_idx := sync.atomic_add_explicit(&global_task_counter, 1, .Relaxed)
         if interval_idx >= interval_count do break
         interval := global_intervals[interval_idx]
-        local_results += process_interval(interval, buffer)
+        results += process_interval(interval, buffer)
     }
-    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
-    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
-
-    sync.barrier_wait(&BARRIER)
-
-    return this_idx == 0 ? global_results : [2]int{}
+    return sum_local_results(results)
 }
 
 make_intervals :: proc() -> [][2]string

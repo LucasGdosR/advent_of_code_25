@@ -9,7 +9,6 @@ import "core:sync"
 INTERVALS_IN_INPUT :: 177
 
 global_intervals: [][2]int
-global_results: [2]int
 
 @private
 solve_day_05_st :: proc() -> [2]int
@@ -25,17 +24,18 @@ solve_day_05_st :: proc() -> [2]int
 @private
 solve_day_05_mt :: proc() -> [2]int
 {
-    this_idx := context.user_index
-    if this_idx == 0 do global_intervals, global_results[1] = make_merged_intervals()
+    results: [2]int
+    if context.user_index == 0
+    {
+        global_intervals, results[1] = make_merged_intervals()
+        sync.atomic_store_explicit(&INPUT_PARSED, true, .Release)
+    }
 
-    sync.barrier_wait(&BARRIER)
+    for !sync.atomic_load_explicit(&INPUT_PARSED, .Acquire) {}
 
     s, e := split_lines_roughly(INPUT)
-
-    sync.atomic_add_explicit(&global_results[0], check_ids(global_intervals, s, e), sync.Atomic_Memory_Order.Relaxed)
-    sync.barrier_wait(&BARRIER)
-
-    return this_idx == 0 ? global_results : [2]int{}
+    results[0] = check_ids(global_intervals, s, e)
+    return sum_local_results(results)
 }
 
 make_merged_intervals :: proc() -> ([][2]int, int)

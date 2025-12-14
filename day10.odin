@@ -5,7 +5,6 @@ import "base:intrinsics"
 import q "core:container/queue"
 import "core:strconv"
 import "core:strings"
-import "core:sync"
 
 @private
 solve_day_10_st :: proc() -> [2]int
@@ -35,12 +34,10 @@ solve_day_10_st :: proc() -> [2]int
     else do return [2]int{}
 }
 
-global_results: [2]int
-
 @private
 solve_day_10_mt :: proc() -> [2]int
 {
-    local_result: int
+    results: [2]int
     start, end := split_lines_roughly(INPUT)
     it := string(INPUT[start:end])
     context.allocator = context.temp_allocator
@@ -49,12 +46,10 @@ solve_day_10_mt :: proc() -> [2]int
         fields := strings.fields(line)
         lights := parse_diagram(fields[0])
         buttons := parse_buttons(fields[1: len(fields) - 1])
-        local_result += bfs(lights, buttons)
+        results[0] += bfs(lights, buttons)
         free_all(context.allocator)
     }
-    sync.atomic_add_explicit(&global_results[0], local_result, sync.Atomic_Memory_Order.Relaxed)
-    sync.barrier_wait(&BARRIER)
-    return context.user_index == 0 ? global_results : [2]int{}
+    return sum_local_results(results)
 }
 
 // 0th index in LSB

@@ -4,19 +4,27 @@ import "core:fmt"
 import "core:math"
 import "core:os"
 import "core:sync"
+import "core:sync/chan"
 import "core:thread"
 import "core:time"
 import vmem "core:mem/virtual"
 
 NUMBER_OF_CORES: int
 BARRIER: sync.Barrier
+CHANNEL: chan.Chan([2]int, chan.Direction.Both)
 INPUT: []u8
+INPUT_PARSED: bool
 
 main :: proc()
 {
   NUMBER_OF_CORES = os.processor_core_count()
   threads := make([]^thread.Thread, NUMBER_OF_CORES, context.temp_allocator)
   sync.barrier_init(&BARRIER, NUMBER_OF_CORES)
+  CHANNEL, _ = chan.create_buffered(
+    chan.Chan([2]int, chan.Direction.Both),
+    NUMBER_OF_CORES,
+    context.temp_allocator
+  )
   for i in 0..<NUMBER_OF_CORES do threads[i] = thread.create_and_start_with_data(rawptr(uintptr(i)), entry_point)
   thread.join_multiple(..threads)
   free_all(context.temp_allocator)
@@ -58,6 +66,7 @@ entry_point :: proc(data: rawptr)
         fmt.println("File for day", day, "does not exist.")
         os.exit(1)
       }
+      sync.atomic_store_explicit(&INPUT_PARSED, false, .Release)
     }
     sync.barrier_wait(&BARRIER) // Assert all threads can read the input.
 
@@ -90,6 +99,31 @@ entry_point :: proc(data: rawptr)
     os.close(results)
   }
   vmem.arena_destroy(&thread_arena)
+}
+
+sum_local_results :: #force_inline proc(results: [2]int) -> [2]int
+{
+  results := results
+  if context.user_index == 0 do for i in 1..<NUMBER_OF_CORES
+  {
+    res, _ := chan.recv(CHANNEL)
+    results += res
+  }
+  else do chan.send(CHANNEL, results)
+  return results
+}
+
+max_local_results :: #force_inline proc(results: [2]int) -> [2]int
+{
+  results := results
+  if context.user_index == 0 do for i in 1..<NUMBER_OF_CORES
+  {
+    res, _ := chan.recv(CHANNEL)
+    if res[0] > results[0] do results[0] = res[0]
+    if res[1] > results[1] do results[1] = res[1]
+  }
+  else do chan.send(CHANNEL, results)
+  return results
 }
 
 // Inclusive [start, end) non-inclusive

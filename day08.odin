@@ -45,9 +45,10 @@ solve_day_08_mt :: proc() -> [2]int
         assert(length == INPUT_LEN)
         global_E = make([dynamic][3]int, length * (length - 1) / 2)
         split_linear_work(length)
+        sync.atomic_store_explicit(&INPUT_PARSED, true, .Release)
     }
 
-    sync.barrier_wait(&BARRIER)
+    for !sync.atomic_load_explicit(&INPUT_PARSED, .Acquire) {}
 
     start, end := global_starts_ends[this_idx], global_starts_ends[this_idx+1]
     fill_edges(global_E[:], global_V, start, end)

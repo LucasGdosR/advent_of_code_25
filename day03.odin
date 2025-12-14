@@ -2,9 +2,7 @@
 package aoc
 
 import "core:strings"
-import "core:sync"
 
-global_results: [2]int
 BANK_LEN :: 100
 LINE_WIDTH :: BANK_LEN + 1 // '\n'
 LINE_COUNT :: 200
@@ -19,18 +17,10 @@ solve_day_03_st :: proc() -> [2]int
 @private
 solve_day_03_mt :: proc() -> [2]int
 {
-    this_idx := context.user_index
-
     start_row, end_row := split_count_evenly(LINE_COUNT)
-    start_i, end_i := start_row * LINE_WIDTH, end_row * LINE_WIDTH - int(this_idx == NUMBER_OF_CORES - 1)
-    local_results := solve(string(INPUT[start_i:end_i]))
-
-    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
-    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
-
-    sync.barrier_wait(&BARRIER)
-
-    return this_idx == 0 ? global_results : [2]int{}
+    start_i, end_i := start_row * LINE_WIDTH, end_row * LINE_WIDTH - int(context.user_index == NUMBER_OF_CORES - 1)
+    results := solve(string(INPUT[start_i:end_i]))
+    return sum_local_results(results)
 }
 
 solve :: proc(it: string) -> [2]int

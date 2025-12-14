@@ -3,7 +3,6 @@ package aoc
 
 import "core:strconv"
 import "core:strings"
-import "core:sync"
 
 LINE_BREAK :: 1
 global_results: [2]int
@@ -28,9 +27,7 @@ solve_day_06_st :: proc() -> [2]int
 @private
 solve_day_06_mt :: proc() -> [2]int
 {
-    this_id := context.user_index
-
-    local_results: [2]int
+    results: [2]int
     data_lines, op_line := parse_lines()
 
     // split problem roughly
@@ -54,13 +51,13 @@ solve_day_06_mt :: proc() -> [2]int
 
     // Part 2
     operands := make([dynamic]int, 0, 4)
-    local_results[1] = part_2(&operands, data_lines[:], op_line, start, end)
+    results[1] = part_2(&operands, data_lines[:], op_line, start, end)
 
     // Part 1
     for &line in data_lines do line = line[start:end]
     op_line = op_line[start:end]
 
-    local_results[0] = part_1(&operands, data_lines[:], &op_line)
+    results[0] = part_1(&operands, data_lines[:], &op_line)
     for op in strings.fields_iterator(&op_line)
     {
         for &line in data_lines
@@ -69,15 +66,11 @@ solve_day_06_mt :: proc() -> [2]int
             n, _ := strconv.parse_int(operand)
             append(&operands, n)
         }
-        local_results[0] += perform_op(op[0], operands[:])
+        results[0] += perform_op(op[0], operands[:])
         clear(&operands)
     }
 
-    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
-    sync.atomic_add_explicit(&global_results[1], local_results[1], sync.Atomic_Memory_Order.Relaxed)
-    sync.barrier_wait(&BARRIER)
-
-    return this_id == 0 ? global_results : [2]int{}
+    return sum_local_results(results)
 }
 
 parse_lines :: proc() -> ([4]string, string)

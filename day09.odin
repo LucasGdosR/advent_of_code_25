@@ -1,6 +1,7 @@
 #+private file
 package aoc
 
+import "core:sync/chan"
 import "core:slice"
 import "core:strconv"
 import "core:strings"
@@ -36,47 +37,32 @@ solve_day_09_st :: proc() -> [2]int
 }
 
 global_points: [][2]int
-global_results: [][2]int
 
 @private
 solve_day_09_mt :: proc() -> [2]int
 {
     this_idx := context.user_index
-    local_results: [2]int
+    results: [2]int
     if this_idx == 0
     {
-        global_results = make([][2]int, NUMBER_OF_CORES)
         global_points = read_points()
         // Drawing lines could be done in parallel.
         global_HL, global_VL = draw_lines(global_points)
         split_linear_work(len(global_points))
+        sync.atomic_store_explicit(&INPUT_PARSED, true, .Release)
     }
 
-    sync.barrier_wait(&BARRIER)
+    for !sync.atomic_load_explicit(&INPUT_PARSED, .Acquire) {}
 
     start, end := global_starts_ends[this_idx], global_starts_ends[this_idx+1]
     for i in start..<end do for p2 in global_points[i+1:]
     {
         p1 := global_points[i]
         area := (abs(p1.x - p2.x) + 1) * (abs(p1.y - p2.y) + 1)
-        if area > local_results[0] do local_results[0] = area
-        if area > local_results[1] && is_valid(p1, p2) do local_results[1] = area
+        if area > results[0] do results[0] = area
+        if area > results[1] && is_valid(p1, p2) do results[1] = area
     }
-    global_results[this_idx] = local_results
-
-    sync.barrier_wait(&BARRIER)
-
-    if this_idx == 0
-    {
-        results: [2]int
-        for res in global_results
-        {
-            if res[0] > results[0] do results[0] = res[0]
-            if res[1] > results[1] do results[1] = res[1]
-        }
-        return results
-    }
-    else do return [2]int{}
+    return max_local_results(results)
 }
 
 read_points :: proc() -> [][2]int

@@ -9,7 +9,7 @@ For this year's AoC, my challenge is making a single program that solves the ent
 
 I was inspired by this [article](https://www.rfleury.com/p/multi-core-by-default) to make this multi-threaded in a simple way.
 
-Total runtime picking the faster out of the single-threaded and the multi-threaded implementation each day: sub 24 ms. In order to significantly lower this, I need a better algorithm for day 2 part 2 (currently brute force).
+Total runtime picking the faster out of the single-threaded and the multi-threaded implementation each day: sub 20 ms. In order to significantly lower this, I need a better algorithm for day 2 part 2 (currently brute force).
 
 ## Commentary by Day
 

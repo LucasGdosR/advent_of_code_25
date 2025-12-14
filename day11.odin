@@ -51,8 +51,9 @@ solve_day_11_mt :: proc() -> [2]int
     if this_idx == 0
     {
         global_G = build_graph()
+        sync.atomic_store_explicit(&INPUT_PARSED, true, .Release)
     }
-    sync.barrier_wait(&BARRIER)
+    for !sync.atomic_load_explicit(&INPUT_PARSED, .Acquire) {}
     if this_idx <= 6
     {
         memo := make(map[[2]string]int)

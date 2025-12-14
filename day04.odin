@@ -172,7 +172,7 @@ solve_day_04_mt :: proc() -> [2]int
     for pr_ij in prs_ij_ub do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
     for pr_ij in prs_ij    do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
     for pr_ij in prs_ij_lb do local_results[0] += int((M^)[pr_ij[0]][pr_ij[1]] < CAN_REMOVE)
-    sync.atomic_add_explicit(&global_results[0], local_results[0], sync.Atomic_Memory_Order.Relaxed)
+    sync.atomic_add_explicit(&global_results[0], local_results[0], .Relaxed)
 
     // Sync at this point so no paper rolls are removed while some thread is counting neighbors.
     sync.barrier_wait(&BARRIER)

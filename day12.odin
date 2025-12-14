@@ -3,7 +3,6 @@ package aoc
 
 import "core:strconv"
 import "core:strings"
-import "core:sync"
 
 RED_HERRING :: 96
 LINE_SPLIT :: 7
@@ -34,12 +33,10 @@ solve_day_12_st :: proc() -> [2]int
     else do return [2]int{}
 }
 
-global_result: int
-
 @private
 solve_day_12_mt :: proc() -> [2]int
 {
-    local_result: int
+    results: [2]int
     start, end := split_lines_roughly(INPUT[RED_HERRING:])
     it := string(INPUT[RED_HERRING + start : RED_HERRING + end])
     for line in strings.split_lines_iterator(&it)
@@ -54,9 +51,7 @@ solve_day_12_mt :: proc() -> [2]int
             count, _ := strconv.parse_int(shape_count)
             shapes_sum += count
         }
-        if W * H >= shapes_sum * 9 do local_result += 1
+        if W * H >= shapes_sum * 9 do results += 1
     }
-    sync.atomic_add_explicit(&global_result, local_result, sync.Atomic_Memory_Order.Relaxed)
-    sync.barrier_wait(&BARRIER)
-    return context.user_index == 0 ? [2]int{ global_result, 0 } : [2]int{}
+    return sum_local_results(results)
 }
